@@ -1,0 +1,19 @@
+{
+  "name": "obfuscate",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "dependencies": {
+    "bluebird": "^3.5.1",
+    "colors": "^1.1.2",
+    "dotenv": "^5.0.1",
+    "glob": "^7.1.2",
+    "javascript-obfuscator": "^0.14.3"
+  },
+  "devDependencies": {},
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "license": "ISC"
+}
