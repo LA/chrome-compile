@@ -1,4 +1,4 @@
-# js-obfuscate
+# chrome-compile
 
 Run `npm install` at root to install dependencies.
 
