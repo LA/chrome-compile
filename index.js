@@ -13,6 +13,25 @@ const asyncForEach = async (array, callback) => {
   }
 }
 
+const copyManifestJSON = () => new Promise((resolve, reject) => {
+  console.log('Grabbing ' + '/manifest.json'.bold + ' pattern in ' + process.env.INPUT_DIR.bold);
+  const globFileLoc = process.env.INPUT_DIR + '/manifest.json';
+  glob(globFileLoc, async (er, files) => {
+    await asyncForEach(files, async (f) => {
+      try {
+        const fSlug = f.split(process.env.INPUT_DIR).join('');
+        const fText = await fs.readFileAsync(f, 'utf-8');
+        const outputFileDir = process.env.OUTPUT_DIR+fSlug;
+        await fs.writeFileAsync(outputFileDir, fText);
+      } catch (error) {
+        reject(error);
+      }
+    });
+    console.log('Copied manifest.json' + ' and saved to ' + process.env.OUTPUT_DIR.bold);
+    resolve();
+  });
+});
+
 const minifyCSSHTML = () => new Promise((resolve, reject) => {
   const globFileLocCSS = process.env.INPUT_DIR + config.CSS_FILE_GLOB_PATTERN;
   const globFileLocHTML = process.env.INPUT_DIR + config.HTML_FILE_GLOB_PATTERN;
@@ -62,6 +81,7 @@ const obfuscateJS = () => new Promise((resolve, reject) => {
     console.log('Launching...');
     await minifyCSSHTML();
     await obfuscateJS();
+    await copyManifestJSON();
     console.log('\n' + '*'.repeat(60) + '\n' + '*'.repeat(60) + '\nCompleted.'.bold + ' ' + 'Built with fingers ' +'by github.com/LA'.bold + '\n' + '*'.repeat(60) + '\n' + '*'.repeat(60) + '\n\n');
   } catch (error) {
     console.log('error', error);
