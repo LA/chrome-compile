@@ -31,7 +31,7 @@ const minifyCSSHTML = () => new Promise((resolve, reject) => {
       }
     });
 
-    console.log(files.length + ' files minified and saved to ' + process.env.OUTPUT_DIR.bold + ' via https://github.com/ianstormtaylor/minify\n');
+    console.log(files.length + ' files minified and saved to ' + process.env.OUTPUT_DIR.bold + ' via my fork of https://github.com/ianstormtaylor/minify\n');
     resolve();
   });
 });
