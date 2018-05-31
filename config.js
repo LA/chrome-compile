@@ -27,9 +27,3 @@ const OBFUSCATE_OPTIONS = {
   transformObjectKeys: false,
   unicodeEscapeSequence: false
 };
-
-const JS_FILE_GLOB_PATTERN = '/*.js';
-const CSS_FILE_GLOB_PATTERN = '/*.css';
-const HTML_FILE_GLOB_PATTERN = '/*.html'
-
-module.exports = { OBFUSCATE_OPTIONS, JS_FILE_GLOB_PATTERN, CSS_FILE_GLOB_PATTERN, HTML_FILE_GLOB_PATTERN };

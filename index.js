@@ -1,79 +1,117 @@
 require('dotenv').config();
-const glob = require('multi-glob').glob
+const readdirp = require('readdirp')
 const config = require('./config');
+const path = require('path');
+const es = require('event-stream');
 const Promise = require('bluebird');
 const fs = Promise.promisifyAll(require('fs'));
 const JavaScriptObfuscator = require('javascript-obfuscator');
 const minify = require('minify');
 require('colors');
 
-const asyncForEach = async (array, callback) => {
-  for (let i=0; i < array.length; i++) {
-    await callback(array[i], i, array);
-  }
-}
+const { INPUT_DIR, OUTPUT_DIR } = process.env;
 
-const copyManifestJSON = () => new Promise((resolve, reject) => {
-  console.log('Grabbing ' + '/manifest.json'.bold + ' pattern in ' + process.env.INPUT_DIR.bold);
-  const globFileLoc = process.env.INPUT_DIR + '/manifest.json';
-  glob(globFileLoc, async (er, files) => {
-    await asyncForEach(files, async (f) => {
-      try {
-        const fSlug = f.split(process.env.INPUT_DIR).join('');
-        const fText = await fs.readFileAsync(f, 'utf-8');
-        const outputFileDir = process.env.OUTPUT_DIR+fSlug;
-        await fs.writeFileAsync(outputFileDir, fText);
-      } catch (error) {
-        reject(error);
-      }
-    });
-    console.log('Copied manifest.json' + ' and saved to ' + process.env.OUTPUT_DIR.bold);
-    resolve();
-  });
+const copyManifestJSON = () => new Promise(async (resolve, reject) => {
+  try {
+    const f = 'manifest.json';
+    const fText = await fs.readFileAsync(path.join(INPUT_DIR, f), 'utf-8');
+    const outputFileDir = path.join(OUTPUT_DIR, f);
+    await fs.writeFileAsync(outputFileDir, fText);
+    console.log('Copied ' + 'manifest.json'.bold + ' to ' + OUTPUT_DIR.bold);
+  } catch (error) {
+    reject(error);
+  }
 });
 
 const minifyCSSHTML = () => new Promise((resolve, reject) => {
-  const globFileLocCSS = process.env.INPUT_DIR + config.CSS_FILE_GLOB_PATTERN;
-  const globFileLocHTML = process.env.INPUT_DIR + config.HTML_FILE_GLOB_PATTERN;
-  console.log('Grabbing [' + config.CSS_FILE_GLOB_PATTERN.bold + ', ' + config.HTML_FILE_GLOB_PATTERN.bold + '] pattern in ' + process.env.INPUT_DIR.bold);
-  glob([globFileLocCSS, globFileLocHTML], async (er, files) => {
-    await asyncForEach(files, async (f, i, arr) => {
+  readdirp({
+    root: path.join(INPUT_DIR),
+    fileFilter: ['*.html', '*.css'],
+    directoryFilter: ['!.git', '!*modules', '!lib', '!img', '!idea']
+  },
+    (fileInfo) => {},
+    async (err, res) => {
       try {
-        const fSlug = f.split(process.env.INPUT_DIR).join('');
-        const fText = await fs.readFileAsync(f, 'utf-8');
-        const minified = minify(fText);
-        const outputFileDir = process.env.OUTPUT_DIR+fSlug;
-        await fs.writeFileAsync(outputFileDir, minified);
-        console.log('Minified ' + (i+1)+'/'+arr.length+' '+fSlug.bold);
+        if (err) reject(err);
+        const { files } = res;
+        for (let i=0; i < files.length; i++) {
+          const f = files[i].path;
+          const fText = await fs.readFileAsync(path.join(INPUT_DIR, f), 'utf-8');
+          const minified = minify(fText);
+          const outputFileDir = path.join(OUTPUT_DIR, f);
+          await fs.writeFileAsync(outputFileDir, minified);
+          console.log('Minified ' + (i+1)+'/'+files.length+' '+f.bold);
+        }
+        console.log(files.length + ' files minified and saved to ' + OUTPUT_DIR.bold + ' via my (github.com/LA) fork of https://github.com/ianstormtaylor/minify\n');
+        resolve();
       } catch (error) {
         reject(error);
       }
-    });
+    }
+  );
+});
 
-    console.log(files.length + ' files minified and saved to ' + process.env.OUTPUT_DIR.bold + ' via my fork of https://github.com/ianstormtaylor/minify\n');
-    resolve();
-  });
+const copyLib = () => new Promise((resolve, reject) => {
+  readdirp({
+      root: path.join(INPUT_DIR),
+      fileFilter: ['*.js'],
+      directoryFilter: ['lib']
+    },
+    (fileInfo) => {},
+    async (err, res) => {
+      try {
+        if (err) reject(err);
+        const files = res.files.filter(el => el.path.includes('lib/'));
+        for (let i=0; i < files.length; i++) {
+          try {
+            const f = files[i].path;
+            const fText = await fs.readFileAsync(path.join(INPUT_DIR, f), 'utf-8');
+            const outputFileDir = path.join(OUTPUT_DIR, f);
+            await fs.writeFileAsync(outputFileDir, fText);
+            console.log('Copied ' + (i+1)+'/'+files.length+' '+f.bold);
+          } catch (error) {
+            reject(error);
+          }
+        }
+        console.log(files.length + ' files copied and saved to ' + OUTPUT_DIR.bold + ' via https://github.com/javascript-obfuscator/javascript-obfuscator\n');
+        resolve();
+      } catch (error) {
+        reject(error);
+      }
+    }
+  );
 });
 
 const obfuscateJS = () => new Promise((resolve, reject) => {
-  const globFileLocJS = process.env.INPUT_DIR + config.JS_FILE_GLOB_PATTERN;
-  console.log('Grabbing ' + config.JS_FILE_GLOB_PATTERN.bold + ' pattern in ' + process.env.INPUT_DIR.bold);
-  glob(globFileLocJS, async (er, files) => {
-    await asyncForEach(files, async (f, i, arr) => {
+  readdirp({
+      root: path.join(INPUT_DIR),
+      fileFilter: ['*.js'],
+      directoryFilter: ['!lib']
+    },
+    (fileInfo) => {},
+    async (err, res) => {
       try {
-        const fSlug = f.split(process.env.INPUT_DIR).join('');
-        const fText = await fs.readFileAsync(f, 'utf-8');
-        const obfuscationResult = JavaScriptObfuscator.obfuscate(fText, config.OBFUSCATE_OPTIONS);
-        const outputFileDir = process.env.OUTPUT_DIR+fSlug;
-        await fs.writeFileAsync(outputFileDir, obfuscationResult);
-        console.log('Obfuscated ' + (i+1)+'/'+arr.length+' '+fSlug.bold);
+        if (err) reject(err);
+        const { files } = res;
+        for (let i=0; i < files.length; i++) {
+          try {
+            const f = files[i].path;
+            const fText = await fs.readFileAsync(path.join(INPUT_DIR, f), 'utf-8');
+            const obfuscationResult = JavaScriptObfuscator.obfuscate(fText, config.OBFUSCATE_OPTIONS);
+            const outputFileDir = path.join(OUTPUT_DIR, f);
+            await fs.writeFileAsync(outputFileDir, obfuscationResult);
+            console.log('Obfuscated ' + (i+1)+'/'+files.length+' '+f.bold);
+          } catch (error) {
+            reject(error);
+          }
+        }
+        console.log(files.length + ' files obfuscated and saved to ' + OUTPUT_DIR.bold + ' via https://github.com/javascript-obfuscator/javascript-obfuscator\n');
+        resolve();
       } catch (error) {
         reject(error);
       }
-    });
-    console.log(files.length + ' files obfuscated and saved to ' + process.env.OUTPUT_DIR.bold + ' via https://github.com/javascript-obfuscator/javascript-obfuscator\n');
-    resolve();
-  });
+    }
+  );
 });
 
 (async () => {
@@ -81,6 +119,7 @@ const obfuscateJS = () => new Promise((resolve, reject) => {
     console.log('Launching...');
     await minifyCSSHTML();
     await obfuscateJS();
+    await copyLib();
     await copyManifestJSON();
     console.log('\n' + '*'.repeat(60) + '\n' + '*'.repeat(60) + '\nCompleted.'.bold + ' ' + 'Built with fingers ' +'by github.com/LA'.bold + '\n' + '*'.repeat(60) + '\n' + '*'.repeat(60) + '\n\n');
   } catch (error) {
