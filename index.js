@@ -73,7 +73,7 @@ const copyLib = () => new Promise((resolve, reject) => {
             reject(error);
           }
         }
-        console.log(files.length + ' files copied and saved to ' + OUTPUT_DIR.bold + ' via https://github.com/javascript-obfuscator/javascript-obfuscator\n');
+        console.log(files.length + ' files copied and saved to ' + OUTPUT_DIR.bold+'\n');
         resolve();
       } catch (error) {
         reject(error);
