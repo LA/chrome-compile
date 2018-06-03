@@ -21,7 +21,7 @@ const OBFUSCATE_OPTIONS = {
   sourceMapFileName: '',
   sourceMapMode: 'separate',
   stringArray: true,
-  stringArrayEncoding: false,
+  stringArrayEncoding: 'base64',
   stringArrayThreshold: 0.75,
   target: 'browser',
   transformObjectKeys: false,
