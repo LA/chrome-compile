@@ -1,4 +1,4 @@
-const OBFUSCATE_OPTIONS = {
+module.exports.OBFUSCATE_OPTIONS = {
   compact: true,
   controlFlowFlattening: false,
   controlFlowFlatteningThreshold: 0.75,
