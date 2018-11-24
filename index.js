@@ -9,7 +9,9 @@ const JavaScriptObfuscator = require('javascript-obfuscator');
 const minify = require('minify');
 require('colors');
 
-const { INPUT_DIR, OUTPUT_DIR } = process.env;
+const { INPUT_NAME } = process.env;
+const INPUT_DIR = '../'+INPUT_NAME;
+const OUTPUT_DIR = '../'+INPUT_NAME+"-prod";
 
 const copyManifestJSON = () => new Promise(async (resolve, reject) => {
   try {
