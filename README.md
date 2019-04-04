@@ -2,6 +2,8 @@
 
 Clone chrome compile into the same directory as your project.
 
+Copy your project and add suffix -prod to the original directory name.
+
 cd into the folder and run `npm install` to install the dependencies.
 
 Edit `config.js` to change obfuscator.io settings
