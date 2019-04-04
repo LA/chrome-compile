@@ -1,9 +1,9 @@
 # chrome-compile
 
-Run `npm install` at root to install dependencies.
+Clone chrome compile into the same directory as your project.
 
-Create a `.env` file with `INPUT_DIR` and `OUTPUT_DIR` which are both folder directory strings.
+cd into the folder and run `npm install` to install the dependencies.
 
-Edit `config.js`
+Edit `config.js` to change obfuscator.io settings
 
-Run `npm start` or `node .` at root.
+Create a `.env` file with `INPUT_NAME=your_project_name`, and then run with `npm start`
