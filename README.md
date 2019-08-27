@@ -1,11 +1,11 @@
 # chrome-compile
 
-Clone chrome compile into the same directory as your project.
+Clone `chrome-compile` into the same directory as your chrome extension project.
 
-Copy your chrome extension project and add suffix `-prod` to the directory name.
+Duplicate your chrome extension project and add suffix `-prod` to the duplicated directory name.
 
-cd into the chrome-compile and run `npm install` or `yarn` to install the dependencies.
+cd into `chrome-compile` and run `npm install` or `yarn` to install the dependencies.
 
-Edit `config.js` to change obfuscator.io settings
+Edit `config.js` to change [https://obfuscator.io/](obfuscator.io) settings
 
-Create a `.env` file with `INPUT_NAME=your_chrome_extension_project_name`, and then run with `npm start`
+Create a `.env` file containing `INPUT_NAME=your_chrome_extension_project_name`, and then run `chrome-compile` with `npm start`
